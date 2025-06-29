@@ -31,10 +31,12 @@ public class MainFrame extends JFrame {
         add(cardPanel, BorderLayout.CENTER);
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
-        JButton vendorButton = new JButton("Vendors");
-        JButton productButton = new JButton("Products");
-        JButton stockOutButton = new JButton("Stock-out");
-        JButton reportButton = new JButton("Reports");
+        topPanel.setBackground(new Color(240, 248, 255)); // light background
+
+        JButton vendorButton = createStyledButton("Vendors");
+        JButton productButton = createStyledButton("Products");
+        JButton stockOutButton = createStyledButton("Stock-out");
+        JButton reportButton = createStyledButton("Reports");
 
         topPanel.add(vendorButton);
         topPanel.add(productButton);
@@ -49,6 +51,17 @@ public class MainFrame extends JFrame {
         reportButton.addActionListener(e -> cardLayout.show(cardPanel, "Report"));
 
         cardLayout.show(cardPanel, "Vendor");
+    }
+
+    public static JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBackground(new Color(30, 144, 255)); // Dodger blue
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        button.setBorder(BorderFactory.createEmptyBorder(5, 15, 5, 15));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
     }
 
     public static void main(String[] args) {

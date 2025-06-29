@@ -1,10 +1,13 @@
 package com.subashita.ui.panel;
 
 import javax.swing.*;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
 
 import com.subashita.inventory.Dao.ProductDAO;
 import com.subashita.inventory.Pojo.Product;
+import com.subashita.ui.MainFrame;
 import com.subashita.ui.form.ProductForm;
 
 import java.awt.*;
@@ -20,24 +23,53 @@ public class ProductPanel extends JPanel {
 
         JPanel topPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
 
-        JButton addButton = new JButton("Add Product");
-        JButton refreshButton = new JButton("Refresh");
+        JButton addButton = MainFrame.createStyledButton("Add Product");
+        JButton refreshButton = MainFrame.createStyledButton("Refresh");
 
         topPanel.add(addButton);
         topPanel.add(refreshButton);
 
         add(topPanel, BorderLayout.NORTH);
 
-        refreshButton.addActionListener(e -> refreshProductTable());
-        addButton.addActionListener(e -> openProductForm(null));
+        // Define model without ID column
+        tableModel = new DefaultTableModel(new String[]{"Name", "Category", "Price", "SKU", "Stock", "Reorder"}, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Disable editing
+            }
+        };
 
-
-
-        tableModel = new DefaultTableModel(new String[]{"ID", "Name", "Category", "Price", "SKU", "Stock", "Reorder"}, 0);
         productTable = new JTable(tableModel);
+        productTable.setRowHeight(24);
+        productTable.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        productTable.setSelectionBackground(new Color(220, 240, 255));
+
+        // Header styling
+        JTableHeader header = productTable.getTableHeader();
+        header.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        header.setBackground(new Color(30, 144, 255));
+        header.setForeground(Color.WHITE);
+
+        // Alternate row colors
+        productTable.setDefaultRenderer(Object.class, new DefaultTableCellRenderer() {
+            private final Color evenColor = new Color(245, 245, 245);
+
+            @Override
+            public Component getTableCellRendererComponent(JTable table, Object value,
+                                                           boolean isSelected, boolean hasFocus,
+                                                           int row, int column) {
+                Component c = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+                if (!isSelected) {
+                    c.setBackground(row % 2 == 0 ? evenColor : Color.WHITE);
+                }
+                return c;
+            }
+        });
+
         JScrollPane scrollPane = new JScrollPane(productTable);
         add(scrollPane, BorderLayout.CENTER);
 
+        refreshButton.addActionListener(e -> refreshProductTable());
         addButton.addActionListener(e -> openProductForm(null));
 
         // Right-click menu
@@ -55,19 +87,19 @@ public class ProductPanel extends JPanel {
         refreshProductTable();
     }
 
+
     public void refreshProductTable() {
         try {
             List<Product> products = ProductDAO.getAllProducts();
             tableModel.setRowCount(0);
             for (Product p : products) {
                 tableModel.addRow(new Object[]{
-                    p.getProductId(),
-                    p.getName(),
-                    p.getCategory(),
-                    p.getPrice(),
-                    p.getSku(),
-                    p.getStockQuantity(),
-                    p.getReorderLevel()
+                        p.getName(),
+                        p.getCategory(),
+                        p.getPrice(),
+                        p.getSku(),
+                        p.getStockQuantity(),
+                        p.getReorderLevel()
                 });
             }
         } catch (SQLException ex) {
@@ -83,11 +115,12 @@ public class ProductPanel extends JPanel {
     private void editSelectedProduct() {
         int row = productTable.getSelectedRow();
         if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
+            String sku = (String) tableModel.getValueAt(row, 3); // SKU column
+
             try {
                 List<Product> products = ProductDAO.getAllProducts();
                 for (Product p : products) {
-                    if (p.getProductId() == id) {
+                    if (p.getSku().equals(sku)) {
                         openProductForm(p);
                         break;
                     }
@@ -101,12 +134,18 @@ public class ProductPanel extends JPanel {
     private void deleteSelectedProduct() {
         int row = productTable.getSelectedRow();
         if (row >= 0) {
-            int id = (int) tableModel.getValueAt(row, 0);
+            String sku = (String) tableModel.getValueAt(row, 3);
             int confirm = JOptionPane.showConfirmDialog(this, "Delete product?", "Confirm", JOptionPane.YES_NO_OPTION);
             if (confirm == JOptionPane.YES_OPTION) {
                 try {
-                    ProductDAO.deleteProduct(id);
-                    refreshProductTable();
+                    List<Product> products = ProductDAO.getAllProducts();
+                    for (Product p : products) {
+                        if (p.getSku().equals(sku)) {
+                            ProductDAO.deleteProduct(p.getProductId());
+                            refreshProductTable();
+                            break;
+                        }
+                    }
                 } catch (SQLException ex) {
                     ex.printStackTrace();
                 }
@@ -114,4 +153,3 @@ public class ProductPanel extends JPanel {
         }
     }
 }
-

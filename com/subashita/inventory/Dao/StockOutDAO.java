@@ -41,14 +41,17 @@ public class StockOutDAO {
 
     public static List<StockOut> getAllStockOuts() throws SQLException {
         List<StockOut> list = new ArrayList<>();
-        String sql = "SELECT * FROM stock_out";
+        String sql = "SELECT s.stock_out_id, s.product_id, p.name as product_name, s.quantity, s.date, s.remarks "
+                + "FROM stock_out s "
+                + "JOIN products p ON s.product_id = p.product_id";
         try (Connection conn = DBConnection.getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 StockOut so = new StockOut();
                 so.setStockOutId(rs.getInt("stock_out_id"));
                 so.setProductId(rs.getInt("product_id"));
+                so.setProductName(rs.getString("product_name")); // <-- you need to add this field to your Pojo if not present
                 so.setQuantity(rs.getInt("quantity"));
                 so.setDate(rs.getString("date"));
                 so.setRemarks(rs.getString("remarks"));
@@ -57,5 +60,6 @@ public class StockOutDAO {
         }
         return list;
     }
+
 }
 

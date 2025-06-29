@@ -6,6 +6,7 @@ public class StockOut {
     private int quantity;
     private String date;
     private String remarks;
+    private String productName;
 
     // Getters and setters
 
@@ -23,5 +24,8 @@ public class StockOut {
 
     public String getRemarks() { return remarks; }
     public void setRemarks(String remarks) { this.remarks = remarks; }
+
+    public String getProductName() { return productName; }
+    public void setProductName(String productName) { this.productName = productName; }
 }
 

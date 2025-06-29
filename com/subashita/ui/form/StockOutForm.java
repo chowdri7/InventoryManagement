@@ -21,41 +21,76 @@ public class StockOutForm extends JFrame {
 
     public StockOutForm(StockOutPanel parent) {
         this.parentPanel = parent;
+
         setTitle("Record Stock-out");
-        setSize(400, 300);
+        setSize(500, 220);
         setLocationRelativeTo(null);
-        setLayout(new GridLayout(5, 2));
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
-        add(new JLabel("Product:"));
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        panel.setBackground(Color.WHITE);
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
         productBox = new JComboBox<>();
-        add(productBox);
-
-        add(new JLabel("Quantity:"));
         quantityField = new JTextField();
-        add(quantityField);
-
-        add(new JLabel("Date (yyyy-mm-dd):"));
         dateField = new JTextField(LocalDate.now().toString());
-        add(dateField);
-
-        add(new JLabel("Remarks:"));
         remarksField = new JTextField();
-        add(remarksField);
 
-        JButton saveButton = new JButton("Save");
-        add(saveButton);
+        // Labels and fields
+        addField(panel, gbc, "Product:", productBox, 0);
+        addField(panel, gbc, "Quantity:", quantityField, 1);
+        addField(panel, gbc, "Date (yyyy-mm-dd):", dateField, 2);
+        addField(panel, gbc, "Remarks:", remarksField, 3);
+
+        JButton saveButton = createStyledButton("Save");
+        gbc.gridx = 0;
+        gbc.gridy = 4;
+        gbc.gridwidth = 2;
+        gbc.fill = GridBagConstraints.CENTER;
+        panel.add(saveButton, gbc);
+
+        add(panel);
 
         // Load products
         try {
             products = ProductDAO.getAllProducts();
             for (Product p : products) {
-                productBox.addItem(p.getName() + " (ID: " + p.getProductId() + ")");
+                productBox.addItem(p.getName() + " (" + p.getCategory() + ")");
             }
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
 
         saveButton.addActionListener(e -> saveStockOut());
+    }
+
+    private void addField(JPanel panel, GridBagConstraints gbc, String labelText, JComponent field, int y) {
+        gbc.gridx = 0;
+        gbc.gridy = y;
+        gbc.weightx = 0.3;
+        JLabel label = new JLabel(labelText);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        panel.add(label, gbc);
+
+        gbc.gridx = 1;
+        gbc.weightx = 0.7;
+        panel.add(field, gbc);
+    }
+
+    private JButton createStyledButton(String text) {
+        JButton button = new JButton(text);
+        button.setFocusPainted(false);
+        button.setBackground(new Color(30, 144, 255)); // Dodger blue
+        button.setForeground(Color.WHITE);
+        button.setFont(new Font("Segoe UI", Font.BOLD, 13));
+        button.setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
+        button.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        return button;
     }
 
     private void saveStockOut() {
@@ -105,4 +140,3 @@ public class StockOutForm extends JFrame {
         }
     }
 }
-
