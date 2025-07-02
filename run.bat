@@ -8,7 +8,7 @@ if not exist out (
 
 cd out
 
-java -cp ".;../lib/*" com.subashita.ui.MainFrame
+java -cp ".;../lib/*" com.application.ui.MainFrame
 
 cd ..
 echo App exited.
